@@ -1,0 +1,5 @@
+{
+  "name": "EduCenter - Training Center Management",
+  "description": "A comprehensive web application to manage all operations of a training center, including students, instructors, courses, finances, and more. The system provides a modern, intuitive interface for efficient administration.",
+  "requestFramePermissions": []
+}

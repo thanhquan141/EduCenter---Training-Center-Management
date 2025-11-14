@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduCenter Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+      darkMode: 'class', // Enable class-based dark mode
+      theme: {
+        extend: {
+          colors: {
+            // Light Theme Colors
+            'light-bg-main': '#f9fafb', // Very light gray, almost white
+            'light-bg-card': '#ffffff',
+            'light-bg-nav': '#f3f4f6', // Light gray
+            'light-text-main': '#111827', // Almost black
+            'light-text-muted': '#6b7280', // Medium gray
+            'light-border': '#e5e7eb', // Light gray border
+
+            // Dark Theme Colors (prefixed with 'dark-')
+            'dark-bg-main': '#111827',
+            'dark-bg-card': '#1f2937',
+            'dark-bg-nav': '#1a222e',
+            'dark-bg-nav-hover': '#374151',
+            'dark-bg-nav-active': '#0f172a',
+            'dark-text-main': '#d1d5db', // Light gray text
+            'dark-text-muted': '#9ca3af', // Medium gray text
+            'dark-border': '#374151',
+
+            // Accent Colors (can be used in both themes)
+            'primary-blue': '#2563eb',
+            'primary-blue-hover': '#1d4ed8',
+            
+            // Status Colors (with corresponding background colors)
+            'status-green': '#10b981',
+            'status-green-bg-light': 'rgba(16, 185, 129, 0.1)',
+            'status-green-bg-dark': 'rgba(16, 185, 129, 0.2)',
+            'status-red': '#ef4444',
+            'status-red-bg-light': 'rgba(239, 68, 68, 0.1)',
+            'status-red-bg-dark': 'rgba(239, 68, 68, 0.2)',
+            'status-yellow': '#f59e0b',
+            'status-yellow-bg-light': 'rgba(245, 158, 11, 0.1)',
+            'status-yellow-bg-dark': 'rgba(245, 158, 11, 0.2)',
+            'status-blue': '#3b82f6',
+            'status-blue-bg-light': 'rgba(59, 130, 246, 0.1)',
+            'status-blue-bg-dark': 'rgba(59, 130, 246, 0.2)',
+          },
+        }
+      }
+    }
+    </script>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "recharts": "https://aistudiocdn.com/recharts@^3.4.1"
+  }
+}
+</script>
+</head>
+<body class="bg-light-bg-main dark:bg-dark-bg-main text-light-text-main dark:text-dark-text-main">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>
