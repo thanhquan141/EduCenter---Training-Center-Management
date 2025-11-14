@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid, Legend, Line, LineChart } from 'recharts';
 import type { Page, Student, Instructor, Course, Transaction, Staff, Exam, Classroom, TrainingField, Candidate, AdminProfile } from './types';
@@ -1300,6 +1301,10 @@ const FinancialManagementPage: React.FC = () => {
       delete: boolean;
       selected: Transaction | null;
     }>({ view: false, add: false, edit: false, delete: false, selected: null });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 5;
+
 
     const handleAddTransaction = (formData: Omit<Transaction, 'id'>) => {
         const newTransaction: Transaction = {
@@ -1340,6 +1345,19 @@ const FinancialManagementPage: React.FC = () => {
         }, { totalThu: 0, totalChi: 0 });
     }, [transactions]);
     
+    const filteredTransactions = useMemo(() => {
+        return transactions.filter(tx => 
+            tx.id.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [transactions, searchTerm]);
+
+    const totalPages = Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE);
+    const paginatedTransactions = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredTransactions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [filteredTransactions, currentPage]);
+
+
     const formatCurrency = (value: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 
     return (
@@ -1392,7 +1410,12 @@ const FinancialManagementPage: React.FC = () => {
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
                     <div className="relative w-full md:w-1/3">
                         <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-light-text-muted dark:text-dark-text-muted" />
-                        <input type="text" placeholder="Tìm giao dịch..." className="w-full bg-light-bg-main dark:bg-dark-bg-main border border-light-border dark:border-dark-border rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+                        <input 
+                            type="text" 
+                            placeholder="Tìm theo mã giao dịch..."
+                            value={searchTerm}
+                            onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}}
+                            className="w-full bg-light-bg-main dark:bg-dark-bg-main border border-light-border dark:border-dark-border rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue" />
                     </div>
                     <div className="flex items-center space-x-4">
                         <select className="bg-light-bg-main dark:bg-dark-bg-main border border-light-border dark:border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue"><option>Tháng này</option></select>
@@ -1413,7 +1436,7 @@ const FinancialManagementPage: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {transactions.map(tx => (
+                            {paginatedTransactions.map(tx => (
                                 <tr key={tx.id} className="border-b border-light-border dark:border-dark-border last:border-b-0 hover:bg-light-bg-nav dark:hover:bg-dark-bg-nav-hover">
                                     <td className="p-4 font-medium">{tx.id}</td>
                                     <td className="p-4 text-sm">{tx.date}</td>
@@ -1434,7 +1457,13 @@ const FinancialManagementPage: React.FC = () => {
                     </table>
                 </div>
                  <div className="mt-6">
-                    <Pagination currentPage={1} totalPages={1} onPageChange={() => {}} totalItems={transactions.length} itemsPerPage={transactions.length}/>
+                    <Pagination 
+                        currentPage={currentPage} 
+                        totalPages={totalPages} 
+                        onPageChange={setCurrentPage} 
+                        totalItems={filteredTransactions.length} 
+                        itemsPerPage={ITEMS_PER_PAGE}
+                    />
                  </div>
             </div>
         </div>
@@ -1443,6 +1472,10 @@ const FinancialManagementPage: React.FC = () => {
 
 const StaffManagementPage: React.FC = () => {
     const [staffList, setStaffList] = useState<Staff[]>(initialStaff);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 5;
+
     const [modalState, setModalState] = useState<{
       view: boolean;
       add: boolean;
@@ -1450,6 +1483,20 @@ const StaffManagementPage: React.FC = () => {
       delete: boolean;
       selected: Staff | null;
     }>({ view: false, add: false, edit: false, delete: false, selected: null });
+
+    const filteredStaff = useMemo(() => {
+        return staffList.filter(staff =>
+            staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            staff.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            staff.role.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [staffList, searchTerm]);
+
+    const totalPages = Math.ceil(filteredStaff.length / ITEMS_PER_PAGE);
+    const paginatedStaff = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredStaff.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [filteredStaff, currentPage]);
 
     const handleAddStaff = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -1558,7 +1605,12 @@ const StaffManagementPage: React.FC = () => {
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                 <div className="relative w-full md:w-1/3">
                     <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-light-text-muted dark:text-dark-text-muted" />
-                    <input type="text" placeholder="Tìm kiếm theo tên hoặc mã nhân viên..." className="w-full bg-light-bg-card dark:bg-dark-bg-card border border-light-border dark:border-dark-border rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+                    <input 
+                        type="text" 
+                        placeholder="Tìm kiếm theo tên, mã hoặc chức vụ..." 
+                        value={searchTerm}
+                        onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                        className="w-full bg-light-bg-card dark:bg-dark-bg-card border border-light-border dark:border-dark-border rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue" />
                 </div>
                 <div className="flex flex-wrap items-center gap-2 justify-start md:justify-end w-full md:w-auto">
                      <select className="bg-light-bg-card dark:bg-dark-bg-card border border-light-border dark:border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm">
@@ -1585,7 +1637,7 @@ const StaffManagementPage: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {staffList.map(staff => (
+                        {paginatedStaff.map(staff => (
                             <tr key={staff.id} className="border-b border-light-border dark:border-dark-border last:border-b-0 hover:bg-light-bg-nav dark:hover:bg-dark-bg-nav-hover">
                                 <td className="p-4"><input type="checkbox" className="bg-light-bg-card dark:bg-dark-bg-card border-light-border dark:border-dark-border rounded" /></td>
                                 <td className="p-4">
@@ -1614,7 +1666,12 @@ const StaffManagementPage: React.FC = () => {
                 </table>
             </div>
              <div className="mt-6">
-                <Pagination currentPage={1} totalPages={3} onPageChange={() => {}} totalItems={staffList.length * 3} itemsPerPage={staffList.length} />
+                <Pagination 
+                    currentPage={currentPage} 
+                    totalPages={totalPages} 
+                    onPageChange={setCurrentPage} 
+                    totalItems={filteredStaff.length} 
+                    itemsPerPage={ITEMS_PER_PAGE} />
             </div>
         </div>
     );
@@ -1629,6 +1686,33 @@ const ExamScheduleManagementPage: React.FC = () => {
       delete: boolean;
       selected: Exam | null;
     }>({ view: false, add: false, edit: false, delete: false, selected: null });
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [subjectFilter, setSubjectFilter] = useState('all');
+    const [dateFilter, setDateFilter] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 5;
+
+    const uniqueSubjects = useMemo(() => [...new Set(exams.map(e => e.subject))], [exams]);
+
+    const filteredExams = useMemo(() => {
+        return exams
+            .filter(exam =>
+                exam.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                exam.id.toLowerCase().includes(searchTerm.toLowerCase())
+            )
+            .filter(exam => statusFilter === 'all' || exam.status === statusFilter)
+            .filter(exam => subjectFilter === 'all' || exam.subject === subjectFilter)
+            .filter(exam => dateFilter === '' || exam.date === dateFilter);
+    }, [exams, searchTerm, statusFilter, subjectFilter, dateFilter]);
+
+    const totalPages = Math.ceil(filteredExams.length / ITEMS_PER_PAGE);
+
+    const paginatedExams = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredExams.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [filteredExams, currentPage]);
 
     const handleAddExam = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -1749,7 +1833,13 @@ const ExamScheduleManagementPage: React.FC = () => {
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                  <div className="relative w-full md:w-1/3">
                     <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-light-text-muted dark:text-dark-text-muted" />
-                    <input type="text" placeholder="Tìm kiếm theo tên hoặc mã kỳ thi..." className="w-full bg-light-bg-card dark:bg-dark-bg-card border border-light-border dark:border-dark-border rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+                    <input 
+                        type="text" 
+                        placeholder="Tìm kiếm theo tên hoặc mã kỳ thi..." 
+                        className="w-full bg-light-bg-card dark:bg-dark-bg-card border border-light-border dark:border-dark-border rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue" 
+                        value={searchTerm}
+                        onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                    />
                 </div>
                  <button onClick={() => setModalState({ ...modalState, add: true })} className="flex items-center bg-primary-blue hover:bg-primary-blue-hover text-white font-semibold py-2 px-4 rounded-lg transition-colors">
                     <PlusIcon className="w-5 h-5 mr-2" />
@@ -1757,10 +1847,44 @@ const ExamScheduleManagementPage: React.FC = () => {
                 </button>
             </div>
             <div className="flex flex-wrap items-center gap-4 mb-6 p-4 bg-light-bg-card dark:bg-dark-bg-card rounded-lg">
-                <select className="bg-light-bg-main dark:bg-dark-bg-main border border-light-border dark:border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm w-full sm:w-auto"><option>Trạng thái: Tất cả</option></select>
-                <select className="bg-light-bg-main dark:bg-dark-bg-main border border-light-border dark:border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm w-full sm:w-auto"><option>Môn học: Tất cả</option></select>
-                <select className="bg-light-bg-main dark:bg-dark-bg-main border border-light-border dark:border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm w-full sm:w-auto"><option>Địa điểm</option></select>
-                <input type="date" className="bg-light-bg-main dark:bg-dark-bg-main border border-light-border dark:border-dark-border rounded-lg px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm w-full sm:w-auto text-light-text-muted dark:text-dark-text-muted" />
+                <select 
+                    className="bg-light-bg-main dark:bg-dark-bg-main border border-light-border dark:border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm w-full sm:w-auto"
+                    value={statusFilter}
+                    onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                >
+                    <option value="all">Tất cả trạng thái</option>
+                    <option value="Sắp diễn ra">Sắp diễn ra</option>
+                    <option value="Đang diễn ra">Đang diễn ra</option>
+                    <option value="Đã kết thúc">Đã kết thúc</option>
+                    <option value="Đã hủy">Đã hủy</option>
+                </select>
+                <select 
+                    className="bg-light-bg-main dark:bg-dark-bg-main border border-light-border dark:border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm w-full sm:w-auto"
+                    value={subjectFilter}
+                    onChange={e => { setSubjectFilter(e.target.value); setCurrentPage(1); }}
+                >
+                    <option value="all">Tất cả môn học</option>
+                    {uniqueSubjects.map(subject => <option key={subject} value={subject}>{subject}</option>)}
+                </select>
+                <input 
+                    type="date" 
+                    className="bg-light-bg-main dark:bg-dark-bg-main border border-light-border dark:border-dark-border rounded-lg px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm w-full sm:w-auto text-light-text-muted dark:text-dark-text-muted" 
+                    value={dateFilter}
+                    onChange={e => { setDateFilter(e.target.value); setCurrentPage(1); }}
+                />
+                 <button
+                    onClick={() => {
+                        setSearchTerm('');
+                        setStatusFilter('all');
+                        setSubjectFilter('all');
+                        setDateFilter('');
+                        setCurrentPage(1);
+                    }}
+                    className="flex items-center text-sm text-light-text-muted dark:text-dark-text-muted hover:text-primary-blue transition-colors"
+                >
+                    <XIcon className="w-4 h-4 mr-1" />
+                    Xóa bộ lọc
+                </button>
             </div>
             <div className="bg-light-bg-card dark:bg-dark-bg-card rounded-lg overflow-x-auto">
                 <table className="w-full text-left min-w-[900px]">
@@ -1777,7 +1901,7 @@ const ExamScheduleManagementPage: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {exams.map(exam => (
+                        {paginatedExams.map(exam => (
                             <tr key={exam.id} className="border-b border-light-border dark:border-dark-border last:border-b-0 hover:bg-light-bg-nav dark:hover:bg-dark-bg-nav-hover">
                                 <td className="p-4 font-medium">{exam.name}<p className="text-xs text-light-text-muted dark:text-dark-text-muted">{exam.id}</p></td>
                                 <td className="p-4 text-sm">{exam.subject}</td>
@@ -1799,7 +1923,12 @@ const ExamScheduleManagementPage: React.FC = () => {
                 </table>
             </div>
              <div className="mt-6">
-                <Pagination currentPage={1} totalPages={3} onPageChange={() => {}} totalItems={100} itemsPerPage={exams.length} />
+                <Pagination 
+                    currentPage={currentPage} 
+                    totalPages={totalPages} 
+                    onPageChange={setCurrentPage} 
+                    totalItems={filteredExams.length} 
+                    itemsPerPage={ITEMS_PER_PAGE} />
             </div>
         </div>
     );
@@ -1807,6 +1936,10 @@ const ExamScheduleManagementPage: React.FC = () => {
 
 const ClassroomManagementPage: React.FC = () => {
     const [classrooms, setClassrooms] = useState<Classroom[]>(initialClassrooms);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 5;
+    
     const [modalState, setModalState] = useState<{
       view: boolean;
       add: boolean;
@@ -1814,6 +1947,22 @@ const ClassroomManagementPage: React.FC = () => {
       delete: boolean;
       selected: Classroom | null;
     }>({ view: false, add: false, edit: false, delete: false, selected: null });
+
+    const filteredClassrooms = useMemo(() => {
+        return classrooms.filter(classroom =>
+            classroom.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            classroom.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            classroom.location.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [classrooms, searchTerm]);
+
+    const totalPages = Math.ceil(filteredClassrooms.length / ITEMS_PER_PAGE);
+
+    const paginatedClassrooms = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredClassrooms.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [filteredClassrooms, currentPage]);
+
 
     const handleAddClassroom = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -1915,7 +2064,13 @@ const ClassroomManagementPage: React.FC = () => {
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                 <div className="relative w-full md:w-1/3">
                     <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-light-text-muted dark:text-dark-text-muted" />
-                    <input type="text" placeholder="Tìm kiếm theo mã hoặc tên phòng..." className="w-full bg-light-bg-card dark:bg-dark-bg-card border border-light-border dark:border-dark-border rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+                    <input 
+                        type="text" 
+                        placeholder="Tìm kiếm theo mã, tên phòng hoặc cơ sở..." 
+                        className="w-full bg-light-bg-card dark:bg-dark-bg-card border border-light-border dark:border-dark-border rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue" 
+                        value={searchTerm}
+                        onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                    />
                 </div>
                 <div className="flex items-center space-x-4">
                     <button className="flex items-center bg-light-bg-card dark:bg-dark-bg-card border border-light-border dark:border-dark-border font-semibold py-2 px-4 rounded-lg hover:bg-light-bg-nav dark:hover:bg-dark-bg-nav-hover transition-colors">
@@ -1941,7 +2096,7 @@ const ClassroomManagementPage: React.FC = () => {
                         </tr>
                     </thead>
                      <tbody>
-                        {classrooms.map(classroom => (
+                        {paginatedClassrooms.map(classroom => (
                             <tr key={classroom.id} className="border-b border-light-border dark:border-dark-border last:border-b-0 hover:bg-light-bg-nav dark:hover:bg-dark-bg-nav-hover">
                                 <td className="p-4"><input type="checkbox" className="bg-light-bg-card dark:bg-dark-bg-card border-light-border dark:border-dark-border rounded" /></td>
                                 <td className="p-4 font-medium">{classroom.id}</td>
@@ -1962,7 +2117,12 @@ const ClassroomManagementPage: React.FC = () => {
                 </table>
             </div>
             <div className="mt-6">
-                <Pagination currentPage={1} totalPages={3} onPageChange={() => {}} totalItems={20} itemsPerPage={classrooms.length} />
+                <Pagination 
+                    currentPage={currentPage} 
+                    totalPages={totalPages} 
+                    onPageChange={setCurrentPage} 
+                    totalItems={filteredClassrooms.length} 
+                    itemsPerPage={ITEMS_PER_PAGE} />
             </div>
         </div>
     );
@@ -1970,6 +2130,9 @@ const ClassroomManagementPage: React.FC = () => {
 
 const TrainingFieldManagementPage: React.FC = () => {
     const [fields, setFields] = useState<TrainingField[]>(initialTrainingFields);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 5;
     const [modalState, setModalState] = useState<{
       view: boolean;
       add: boolean;
@@ -1977,6 +2140,20 @@ const TrainingFieldManagementPage: React.FC = () => {
       delete: boolean;
       selected: TrainingField | null;
     }>({ view: false, add: false, edit: false, delete: false, selected: null });
+    
+    const filteredFields = useMemo(() => {
+        return fields.filter(field =>
+            field.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            field.id.toString().includes(searchTerm)
+        );
+    }, [fields, searchTerm]);
+
+    const totalPages = Math.ceil(filteredFields.length / ITEMS_PER_PAGE);
+    const paginatedFields = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredFields.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [filteredFields, currentPage]);
+
 
     const handleAddTrainingField = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -2033,7 +2210,7 @@ const TrainingFieldManagementPage: React.FC = () => {
             <Modal isOpen={modalState.view} onClose={() => setModalState({ ...modalState, view: false, selected: null })} title="Thông tin Lĩnh vực">
                 {modalState.selected && (
                     <div className="space-y-3 text-sm">
-                        <p><strong className="w-24 inline-block">STT:</strong> {modalState.selected.id}</p>
+                        <p><strong className="w-24 inline-block">ID:</strong> {modalState.selected.id}</p>
                         <p><strong className="w-24 inline-block">Tên lĩnh vực:</strong> {modalState.selected.name}</p>
                         <p><strong className="w-24 inline-block align-top">Mô tả:</strong> <span className="inline-block w-[calc(100%-7rem)]">{modalState.selected.description}</span></p>
                         <p><strong className="w-24 inline-block">Ngày tạo:</strong> {modalState.selected.creationDate}</p>
@@ -2052,7 +2229,13 @@ const TrainingFieldManagementPage: React.FC = () => {
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                 <div className="relative w-full md:w-1/3">
                     <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-light-text-muted dark:text-dark-text-muted" />
-                    <input type="text" placeholder="Tìm kiếm lĩnh vực..." className="w-full bg-light-bg-card dark:bg-dark-bg-card border border-light-border dark:border-dark-border rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+                    <input 
+                        type="text" 
+                        placeholder="Tìm theo tên hoặc mã..." 
+                        className="w-full bg-light-bg-card dark:bg-dark-bg-card border border-light-border dark:border-dark-border rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                        value={searchTerm}
+                        onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                    />
                 </div>
                 <div className="flex items-center space-x-4">
                     <button onClick={() => setModalState({ ...modalState, add: true })} className="flex items-center bg-primary-blue hover:bg-primary-blue-hover text-white font-semibold py-2 px-4 rounded-lg transition-colors">
@@ -2065,7 +2248,7 @@ const TrainingFieldManagementPage: React.FC = () => {
                 <table className="w-full text-left min-w-[700px]">
                     <thead className="bg-light-bg-nav dark:bg-dark-bg-nav">
                         <tr>
-                            <th className="p-4 text-sm font-semibold text-light-text-muted dark:text-dark-text-muted">STT</th>
+                            <th className="p-4 text-sm font-semibold text-light-text-muted dark:text-dark-text-muted">Mã</th>
                             <th className="p-4 text-sm font-semibold text-light-text-muted dark:text-dark-text-muted">Tên Lĩnh vực</th>
                             <th className="p-4 text-sm font-semibold text-light-text-muted dark:text-dark-text-muted w-1/2">Mô tả Ngắn</th>
                             <th className="p-4 text-sm font-semibold text-light-text-muted dark:text-dark-text-muted">Ngày Tạo</th>
@@ -2073,7 +2256,7 @@ const TrainingFieldManagementPage: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {fields.map(field => (
+                        {paginatedFields.map(field => (
                             <tr key={field.id} className="border-b border-light-border dark:border-dark-border last:border-b-0 hover:bg-light-bg-nav dark:hover:bg-dark-bg-nav-hover">
                                 <td className="p-4">{field.id}</td>
                                 <td className="p-4 font-medium">{field.name}</td>
@@ -2092,7 +2275,12 @@ const TrainingFieldManagementPage: React.FC = () => {
                 </table>
             </div>
              <div className="mt-6">
-                <Pagination currentPage={1} totalPages={2} onPageChange={() => {}} totalItems={20} itemsPerPage={fields.length} />
+                <Pagination 
+                    currentPage={currentPage} 
+                    totalPages={totalPages} 
+                    onPageChange={setCurrentPage}
+                    totalItems={filteredFields.length} 
+                    itemsPerPage={ITEMS_PER_PAGE} />
             </div>
         </div>
     );
@@ -2100,6 +2288,9 @@ const TrainingFieldManagementPage: React.FC = () => {
 
 const CandidateManagementPage: React.FC = () => {
     const [candidates, setCandidates] = useState<Candidate[]>(initialCandidates);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 5;
     const [modalState, setModalState] = useState<{
       view: boolean;
       add: boolean;
@@ -2107,6 +2298,19 @@ const CandidateManagementPage: React.FC = () => {
       delete: boolean;
       selected: Candidate | null;
     }>({ view: false, add: false, edit: false, delete: false, selected: null });
+
+    const filteredCandidates = useMemo(() => {
+        return candidates.filter(candidate =>
+            candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            candidate.id.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [candidates, searchTerm]);
+    
+    const totalPages = Math.ceil(filteredCandidates.length / ITEMS_PER_PAGE);
+    const paginatedCandidates = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredCandidates.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [filteredCandidates, currentPage]);
 
     const handleAddCandidate = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -2221,7 +2425,13 @@ const CandidateManagementPage: React.FC = () => {
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                 <div className="relative w-full md:w-1/3">
                     <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-light-text-muted dark:text-dark-text-muted" />
-                    <input type="text" placeholder="Tìm kiếm theo tên hoặc ID thí sinh..." className="w-full bg-light-bg-card dark:bg-dark-bg-card border border-light-border dark:border-dark-border rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue" />
+                    <input 
+                        type="text" 
+                        placeholder="Tìm kiếm theo tên hoặc ID thí sinh..." 
+                        className="w-full bg-light-bg-card dark:bg-dark-bg-card border border-light-border dark:border-dark-border rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue" 
+                        value={searchTerm}
+                        onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                    />
                 </div>
                 <div className="flex flex-wrap items-center gap-2 justify-start md:justify-end w-full md:w-auto">
                     <select className="bg-light-bg-card dark:bg-dark-bg-card border border-light-border dark:border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"><option>Trạng thái hồ sơ</option></select>
@@ -2249,7 +2459,7 @@ const CandidateManagementPage: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {candidates.map(candidate => (
+                        {paginatedCandidates.map(candidate => (
                             <tr key={candidate.id} className="border-b border-light-border dark:border-dark-border last:border-b-0 hover:bg-light-bg-nav dark:hover:bg-dark-bg-nav-hover">
                                 <td className="p-4 font-medium">{candidate.id}</td>
                                 <td className="p-4 text-sm">{candidate.name}</td>
@@ -2270,7 +2480,12 @@ const CandidateManagementPage: React.FC = () => {
                 </table>
             </div>
             <div className="mt-6">
-                <Pagination currentPage={1} totalPages={3} onPageChange={() => {}} totalItems={1250} itemsPerPage={candidates.length} />
+                <Pagination 
+                    currentPage={currentPage} 
+                    totalPages={totalPages} 
+                    onPageChange={setCurrentPage} 
+                    totalItems={filteredCandidates.length} 
+                    itemsPerPage={ITEMS_PER_PAGE} />
             </div>
         </div>
     );
